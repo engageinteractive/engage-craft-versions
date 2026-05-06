@@ -25,7 +25,7 @@ This is a private Composer package installed from its GitHub repository. Add it 
 Then require it:
 
 ```bash
-composer require engage-interactive/craft-versions
+composer require engageinteractive/craft-versions
 ```
 
 Install the plugin in Craft:

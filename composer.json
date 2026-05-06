@@ -1,5 +1,5 @@
 {
-  "name": "engage-interactive/craft-versions",
+  "name": "engageinteractive/craft-versions",
   "description": "Check craft, plugin, php versions via an endpoint.",
   "type": "craft-plugin",
   "require": {
