@@ -1,0 +1,25 @@
+{# @var plugin \engageinteractive\craftversions\Versions #}
+{# @var settings \engageinteractive\craftversions\models\Settings #}
+
+{% import "_includes/forms" as forms %}
+
+{{ forms.autosuggestField({
+    first: true,
+    label: "API Key"|t('versions'),
+    instructions: "Use the console command to generate a new API key or set the CRAFT_VERSIONS_API_KEY environment variable."|t('versions'),
+    id: 'apiKey',
+    name: 'apiKey',
+    suggestEnvVars: true,
+    value: settings.apiKey,
+    errors: settings.getErrors('apiKey'),
+    required: true,
+}) }}
+
+{% if currentUser.admin %}
+    <div class="readable">
+        <div class="pane tip">
+            <p>Admin user detected.</p>
+            <p class="light">API Key: {{ getenv('CRAFT_VERSIONS_API_KEY') }}</p>
+        </div>
+    </div>
+{% endif %}
