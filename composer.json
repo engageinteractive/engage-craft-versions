@@ -16,7 +16,7 @@
     }
   },
   "extra": {
-    "handle": "_versions",
+    "handle": "versions",
     "name": "Versions",
     "developer": "Engage Interactive",
     "documentationUrl": "",

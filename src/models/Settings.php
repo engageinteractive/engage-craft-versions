@@ -2,7 +2,6 @@
 
 namespace engageinteractive\craftversions\models;
 
-use Craft;
 use craft\base\Model;
 use craft\behaviors\EnvAttributeParserBehavior;
 

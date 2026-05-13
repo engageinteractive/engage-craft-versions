@@ -2,12 +2,11 @@
 
 namespace engageinteractive\craftversions\console\controllers;
 
-use Craft;
 use craft\console\Controller;
-use yii\console\ExitCode;
+use craft\helpers\Console;
 use engageinteractive\craftversions\Versions;
 use Throwable;
-use craft\helpers\Console;
+use yii\console\ExitCode;
 
 /**
  * Console command controller for the Versions plugin.
@@ -45,7 +44,7 @@ class GenerateController extends Controller
      * random API key. The key is saved as `CRAFT_VERSIONS_API_KEY` in the `.env` file.
      *
      * Usage:
-     *   php craft _versions/generate-api-key
+     *   php craft versions/generate-api-key
      *
      * @return int Exit code (0 on success, non-zero on error)
      */

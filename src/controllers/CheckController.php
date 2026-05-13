@@ -3,16 +3,20 @@
 namespace engageinteractive\craftversions\controllers;
 
 use Craft;
-use craft\web\Controller;
-use engageinteractive\craftversions\Versions;
-use yii\web\Response;
 use craft\helpers\App;
-use Jean85\Version;
+use craft\web\Controller;
+use craft\web\ServiceUnavailableHttpException;
+use engageinteractive\craftversions\Versions;
+use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
+use yii\web\Response;
+use yii\base\Action;
+use yii\web\UnauthorizedHttpException;
 
 /**
  * API endpoint controller for the Versions plugin.
  *
- * Handles authenticated requests to the `/actions/_versions/check` endpoint.
+ * Handles authenticated requests to the `/actions/versions/check` endpoint.
  * Returns version information (Craft, PHP, plugins) when a valid API key is provided.
  *
  * @since 1.0.0
@@ -25,14 +29,22 @@ class CheckController extends Controller
     /** @var array|int|bool Actions that do not require authentication */
     protected array|int|bool $allowAnonymous = ['check'];
 
+    protected array $verbs = [
+        'check' => ['GET'],
+    ];
+
     /**
      * Runs before each action.
      *
      * Disables CSRF validation for the check action to allow remote requests (e.g., from Google Sheets)
      * to authenticate via the `apiKey` header without CSRF tokens.
      *
-     * @param yii\base\Action $action The action being executed
+     * @param Action $action The action being executed
      * @return bool Whether to continue executing the action
+     * @throws BadRequestHttpException
+     * @throws ServiceUnavailableHttpException
+     * @throws ForbiddenHttpException
+     * @throws UnauthorizedHttpException
      */
     public function beforeAction($action): bool
     {
@@ -66,22 +78,24 @@ class CheckController extends Controller
      *   {"success": false, "error": "Unauthorised."}
      *
      * @return Response JSON response with version data or error message
+     * @throws BadRequestHttpException
      */
     public function actionCheck(): Response
     {
+        $this->requireAcceptsJson();
         $token = Craft::$app->request->getHeaders()->get('apiKey');
         if (!$token) {
-            $this->response->setStatusCode(403);
+            $this->response->setStatusCode(401);
             return $this->asJson(['success' => false, 'error' => 'Unauthorised.']);
         }
         $settings = Versions::getInstance()->getSettings();
         $storedKey = App::parseEnv($settings->apiKey);
-        if ($token && $storedKey && hash_equals($storedKey, $token)) {
+        if ($storedKey && hash_equals($storedKey, $token)) {
             $this->response->setStatusCode(200);
             $versionData = Versions::getInstance()->versionsService->fetchVersion();
             return $this->asJson(['success' => true, 'data' => $versionData]);
         }
-        $this->response->setStatusCode(403);
+        $this->response->setStatusCode(401);
         return $this->asJson(['success' => false, 'error' => 'Unauthorised.']);
     }
 }

@@ -3,13 +3,12 @@
 namespace engageinteractive\craftversions\services;
 
 use Craft;
-use craft\utilities\SystemReport;
-use yii\base\Component;
+use craft\helpers\App;
+use engageinteractive\craftversions\models\Settings;
 use engageinteractive\craftversions\Versions;
 use Throwable;
-use engageinteractive\craftversions\models\Settings;
-use Composer\InstalledVersions;
-use craft\helpers\App;
+use yii\base\Component;
+use yii\base\Exception;
 
 /**
  * Service for managing and collecting version information.
@@ -39,15 +38,20 @@ class VersionsService extends Component
     }
 
     /**
-     * Generates a random API key.
+     * Persists the API key to project settings.
      *
-     * Creates a cryptographically secure random 32-character string for use as the API key.
+     * Generates a new key and stores it in the `.env` file, then updates the plugin settings
+     * in the project config to reference `$CRAFT_VERSIONS_API_KEY`.
      *
-     * @return string A random 32-character API key
+     * @return void
+     * @throws Exception
      */
-    private function generateApiKey(): string
+    private function saveApiKey(): void
     {
-        return Craft::$app->security->generateRandomString(32);
+        $this->createEnvVariableName();
+        $settings = new Settings();
+        $settings->apiKey = '$CRAFT_VERSIONS_API_KEY';
+        Craft::$app->plugins->savePluginSettings(Versions::getInstance(), $settings->toArray());
     }
 
     /**
@@ -56,6 +60,7 @@ class VersionsService extends Component
      * Uses Craft's config API to write the generated key to `.env` as `CRAFT_VERSIONS_API_KEY`.
      *
      * @return void
+     * @throws Exception
      */
     private function createEnvVariableName(): void
     {
@@ -63,19 +68,16 @@ class VersionsService extends Component
     }
 
     /**
-     * Persists the API key to project settings.
+     * Generates a random API key.
      *
-     * Generates a new key and stores it in the `.env` file, then updates the plugin settings
-     * in the project config to reference `$CRAFT_VERSIONS_API_KEY`.
+     * Creates a cryptographically secure random 32-character string for use as the API key.
      *
-     * @return void
+     * @return string A random 32-character API key
+     * @throws Exception
      */
-    private function saveApiKey(): void
+    private function generateApiKey(): string
     {
-        $this->createEnvVariableName();
-        $settings = new Settings();
-        $settings->apiKey = '$CRAFT_VERSIONS_API_KEY';
-        Craft::$app->plugins->savePluginSettings(Versions::getInstance(), $settings->toArray());
+        return Craft::$app->security->generateRandomString();
     }
 
     /**
@@ -95,10 +97,9 @@ class VersionsService extends Component
     {
         $craftVersion = Craft::$app->getVersion();
         $phpVersion = App::phpVersion();
-        $plugins = [];
-        foreach (Craft::$app->getPlugins()->getAllPlugins() as $handle => $plugin) {
-            $plugins[$handle] = $plugin->getVersion();
-        }
+        $plugins = array_map(function ($plugin) {
+            return $plugin->getVersion();
+        }, Craft::$app->getPlugins()->getAllPlugins());
 
         return [
             'craftVersion' => $craftVersion,

@@ -14,12 +14,14 @@ The Versions plugin exposes an authenticated endpoint that returns version infor
 This is a private Composer package installed from its GitHub repository. Add it to the site's `composer.json`:
 
 ```json
-"repositories": [
+{
+  "repositories": [
     {
-        "type": "vcs",
-        "url": "https://github.com/engageinteractive/engage-craft-versions"
+      "type": "vcs",
+      "url": "https://github.com/engageinteractive/engage-craft-versions"
     }
-]
+  ]
+}
 ```
 
 Then require it:
@@ -31,7 +33,7 @@ composer require engageinteractive/craft-versions
 Install the plugin in Craft:
 
 ```bash
-php craft plugin/install _versions
+php craft plugin/install versions
 ```
 
 ## Configuration
@@ -41,7 +43,7 @@ php craft plugin/install _versions
 Run the console command to generate a key and write it automatically to `.env`:
 
 ```bash
-php craft _versions/generate-api-key
+php craft versions/generate-api-key
 ```
 
 This will:
@@ -64,14 +66,14 @@ CRAFT_VERSIONS_API_KEY=your-key-here
 Admin users can see the resolved value of `CRAFT_VERSIONS_API_KEY` on the plugin settings page in the Craft control panel:
 
 ```
-/admin/settings/plugins/_versions
+/admin/settings/plugins/versions
 ```
 
 The field also accepts the `$CRAFT_VERSIONS_API_KEY` environment variable reference directly if you need to update it manually via the CP.
 
 ## Endpoint
 
-### `GET /actions/_versions/check`
+### `GET /actions/versions/check`
 
 Returns version information for Craft CMS, PHP, and all installed plugins.
 
@@ -79,12 +81,15 @@ Returns version information for Craft CMS, PHP, and all installed plugins.
 - Required header: `apiKey`
 - Value: must match `CRAFT_VERSIONS_API_KEY`
 - Comparison: timing-safe (`hash_equals`)
+- Allowed method: `GET` only
+- Request must accept JSON (`Accept: application/json` recommended)
 
 **Test locally:**
 
 ```bash
-curl -X GET http://localhost:8000/actions/_versions/check \
-  -H "apiKey: your-key-here"
+curl -X GET http://localhost:8000/actions/versions/check \
+  -H "apiKey: your-key-here" \
+  -H "Accept: application/json"
 ```
 
 **Success response (200):**
@@ -102,7 +107,7 @@ curl -X GET http://localhost:8000/actions/_versions/check \
 }
 ```
 
-**Failure response (403):**
+**Failure response (401):**
 ```json
 {
   "success": false,
@@ -112,7 +117,7 @@ curl -X GET http://localhost:8000/actions/_versions/check \
 
 ## Console Commands
 
-### `php craft _versions/generate-api-key`
+### `php craft versions/generate-api-key`
 
 Generates a new random API key and writes it to `.env`. Prompts for confirmation before overwriting an existing key.
 
@@ -124,12 +129,15 @@ Use Google Apps Script (`UrlFetchApp`) to call the endpoint and write data into 
 
 ```javascript
 function fetchVersionInfo() {
-  const url = 'https://example.com/actions/_versions/check';
+  const url = 'https://example.com/actions/versions/check';
   const apiKey = 'your-key-here';
 
   const response = UrlFetchApp.fetch(url, {
     method: 'get',
-    headers: { 'apiKey': apiKey },
+    headers: {
+      'apiKey': apiKey,
+      'Accept': 'application/json',
+    },
     muteHttpExceptions: true,
   });
 
@@ -163,18 +171,19 @@ src/
 
 ## Troubleshooting
 
-### 403 – Unauthorised
+### 401 – Unauthorised
 
 - Verify `CRAFT_VERSIONS_API_KEY` is set in the environment
 - Confirm the `apiKey` request header value matches
+- Confirm the request includes an `Accept: application/json` header
 - On staging/prod, check the key is set in the server environment, not just `.env`
 - Sync project config if the plugin settings reference is missing: `php craft project-config/apply`
 
 ### 404 – Not found
 
-- The plugin handle is `_versions` (with underscore prefix)
+- The plugin handle is `versions` (with underscore prefix)
 - Confirm the plugin is enabled: Settings → Plugins in the Craft CP
-- Verify `"handle": "_versions"` in `composer.json`
+- Verify `"handle": "versions"` in `composer.json`
 
 ### Key generation fails
 
@@ -185,8 +194,13 @@ src/
 ## Security Notes
 
 - The endpoint returns read-only version metadata only — no secrets, paths, or credentials are exposed
-- CSRF validation is disabled only for `/actions/_versions/check`
+- CSRF validation is disabled only for `/actions/versions/check`
+- The endpoint is restricted to `GET` requests only
+- The endpoint requires a JSON-capable request via `requireAcceptsJson()`
+- Authentication failures return `401` responses
 - Comparison uses `hash_equals` to prevent timing attacks
+- Token generation uses Craft's cryptographically secure `security->generateRandomString()` helper
+- Secret values are intended to be stored in environment variables and resolved via Craft's env parsing helpers
 - The resolved API key value is visible to admin users only via the CP settings page
 
 ## Support
