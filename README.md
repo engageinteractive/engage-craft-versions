@@ -117,6 +117,16 @@ curl -X GET http://localhost:8000/actions/versions/check \
 
 ## Console Commands
 
+Cloudflare steps.
+1. Go to Security→ WAF → Custom rules(or Security → Configuration → WAF Custom rules).
+2. Click Create rule(or Add rule).
+3. Rule name: e.g.Craft CMS Versions Endpoint.
+4. Field -> URI Path Equals -> /actions/versions/check
+5. Set to skip bot fight mode
+6. Deploy/Save.
+
+## Console Commands
+
 ### `php craft versions/generate-api-key`
 
 Generates a new random API key and writes it to `.env`. Prompts for confirmation before overwriting an existing key.
