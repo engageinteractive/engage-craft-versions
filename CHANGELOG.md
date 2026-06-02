@@ -4,11 +4,11 @@ All notable changes to the Craft Versions plugin are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [1.0.4] – 2026-06-02
+## [2.0.0] – 2026-06-02
 
 ### Changed
 
-- Established a Craft CMS 5-specific release branch.
+- Started the 2.x release line for Craft CMS 5.
 - Updated Composer dependencies.
 - Lowered the minimum Craft CMS 5 version requirement.
 
