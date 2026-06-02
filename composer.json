@@ -4,9 +4,9 @@
   "type": "craft-plugin",
   "require": {
     "php": ">=8.2",
-    "craftcms/cms": "^5.9.0"
+    "craftcms/cms": "^5.0.0"
   },
-  "require-dev": {
+  "require-dev": {  
     "craftcms/ecs": "dev-main",
     "craftcms/phpstan": "dev-main"
   },
